@@ -957,8 +957,7 @@ const ApiUtils = {
       }
 
       const response = await fetch(
-        `${STATE.jellyfinData.serverAddress}/Items/${itemId}`,
-        // `${STATE.jellyfinData.serverAddress}/Users/${STATE.jellyfinData.userId}/Items/${itemId}?Fields=Overview,RemoteTrailers,Genres,CommunityRating,CriticRating,OfficialRating,PremiereDate,RunTimeTicks,ProductionYear,MediaSources`,
+        `${STATE.jellyfinData.serverAddress}/Users/${STATE.jellyfinData.userId}/Items/${itemId}?Fields=Overview,Genres,CommunityRating,CriticRating,OfficialRating,PremiereDate,RunTimeTicks`,
         {
           headers: this.getAuthHeaders(),
         }
@@ -969,6 +968,25 @@ const ApiUtils = {
       }
 
       const itemData = await response.json();
+
+      // Fetch local trailers separately
+      try {
+        const trailersResponse = await fetch(
+          `${STATE.jellyfinData.serverAddress}/Users/${STATE.jellyfinData.userId}/Items/${itemId}/LocalTrailers`,
+          {
+            headers: this.getAuthHeaders(),
+          }
+        );
+
+        if (trailersResponse.ok) {
+          const trailers = await trailersResponse.json();
+          itemData.LocalTrailers = trailers;
+          console.log(`Fetched ${trailers.length} local trailer(s) for ${itemId}`);
+        }
+      } catch (trailerError) {
+        console.warn(`Could not fetch local trailers for ${itemId}:`, trailerError);
+        itemData.LocalTrailers = [];
+      }
 
       STATE.slideshow.loadedItems[itemId] = itemData;
 
@@ -1432,13 +1450,12 @@ const SlideCreator = {
     let isVideo = false;
     let trailerUrl = null;
 
-    // 1. Check for Remote Trailers (YouTube)
-    // Priority: Custom Config URL > Metadata RemoteTrailer
-    if (STATE.slideshow.customTrailerUrls && STATE.slideshow.customTrailerUrls[itemId]) {
-      trailerUrl = STATE.slideshow.customTrailerUrls[itemId];
-      console.log(`Using custom trailer URL for ${itemId}: ${trailerUrl}`);
-    } else if (item.RemoteTrailers && item.RemoteTrailers.length > 0) {
-      trailerUrl = item.RemoteTrailers[0].Url;
+    // Check for Local Trailers
+    if (item.LocalTrailers && item.LocalTrailers.length > 0) {
+      const trailer = item.LocalTrailers[0];
+      // Use the trailer's ID to build the stream URL
+      trailerUrl = `${serverAddress}/Videos/${trailer.Id}/stream?static=true&api_key=${STATE.jellyfinData.accessToken}`;
+      console.log(`Using local trailer for ${itemId}: ${trailerUrl}`);
     }
 
     const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
@@ -1450,178 +1467,51 @@ const SlideCreator = {
     const shouldPlayVideo = enableVideo && (!isMobile || enableMobileVideo);
 
     if (trailerUrl && shouldPlayVideo) {
-      let isYoutube = false;
-      let videoId = null;
+      isVideo = true;
 
-      try {
-        const urlObj = new URL(trailerUrl);
-        if (urlObj.hostname.includes('youtube.com') || urlObj.hostname.includes('youtu.be')) {
-          isYoutube = true;
-          videoId = urlObj.searchParams.get('v');
-          if (!videoId && urlObj.hostname.includes('youtu.be')) {
-            videoId = urlObj.pathname.substring(1);
-          }
-        }
-      } catch (e) {
-        console.warn("Invalid trailer URL:", trailerUrl);
+      const videoAttributes = {
+        className: "backdrop video-backdrop",
+        src: trailerUrl,
+        autoplay: false,
+        preload: "auto",
+        loop: false,
+        style: "object-fit: cover; width: 100%; height: 100%; pointer-events: none;"
+      };
+
+      if (STATE.slideshow.isMuted) {
+        videoAttributes.muted = "";
       }
 
-      if (isYoutube && videoId) {
-        isVideo = true;
-        // Create container for YouTube API
-        const videoClass = CONFIG.fullWidthVideo ? "video-backdrop-full" : "video-backdrop-default";
+      backdrop = SlideUtils.createElement("video", videoAttributes);
 
-        backdrop = SlideUtils.createElement("div", {
-          className: `backdrop video-backdrop ${videoClass}`,
-          id: `youtube-player-${itemId}`
-        });
-
-        // Initialize YouTube Player
-        SlideUtils.loadYouTubeIframeAPI().then(() => {
-          // Fetch SponsorBlock data
-          ApiUtils.fetchSponsorBlockData(videoId).then(segments => {
-            const playerVars = {
-              autoplay: 0,
-              mute: STATE.slideshow.isMuted ? 1 : 0,
-              controls: 0,
-              disablekb: 1,
-              fs: 0,
-              iv_load_policy: 3,
-              rel: 0,
-              loop: 0
-            };
-
-            // Determine video quality
-            let quality = 'hd1080';
-            if (CONFIG.preferredVideoQuality === 'Maximum') {
-              quality = 'highres';
-            } else if (CONFIG.preferredVideoQuality === '720p') {
-              quality = 'hd720';
-            } else if (CONFIG.preferredVideoQuality === '1080p') {
-              quality = 'hd1080';
-            } else { // Auto or fallback
-              // If screen is wider than 1920, prefer highres, otherwise 1080p
-              quality = window.screen.width > 1920 ? 'highres' : 'hd1080';
-            }
-
-            playerVars.suggestedQuality = quality;
-
-            // Apply SponsorBlock start/end times
-            if (segments.intro) {
-              playerVars.start = Math.ceil(segments.intro[1]);
-              console.info(`SponsorBlock intro detected for video ${videoId}: skipping to ${playerVars.start}s`);
-            }
-            if (segments.outro) {
-              playerVars.end = Math.floor(segments.outro[0]);
-              console.info(`SponsorBlock outro detected for video ${videoId}: ending at ${playerVars.end}s`);
-            }
-
-            STATE.slideshow.videoPlayers[itemId] = new YT.Player(`youtube-player-${itemId}`, {
-              height: '100%',
-              width: '100%',
-              videoId: videoId,
-              playerVars: playerVars,
-              events: {
-                'onReady': (event) => {
-                  // Store start/end time and videoId for later use
-                  event.target._startTime = playerVars.start || 0;
-                  event.target._endTime = playerVars.end || undefined;
-                  event.target._videoId = videoId;
-
-                  if (STATE.slideshow.isMuted) {
-                    event.target.mute();
-                  } else {
-                    event.target.unMute();
-                    event.target.setVolume(40);
-                  }
-
-                  if (typeof event.target.setPlaybackQuality === 'function') {
-                    event.target.setPlaybackQuality(quality);
-                  }
-
-                  // Only play if this is the active slide
-                  const slide = document.querySelector(`.slide[data-item-id="${itemId}"]`);
-                  if (slide && slide.classList.contains('active')) {
-                    event.target.playVideo();
-                    // Check if it actually started playing after a short delay (handling autoplay blocks)
-                    setTimeout(() => {
-                      if (event.target.getPlayerState() !== YT.PlayerState.PLAYING &&
-                        event.target.getPlayerState() !== YT.PlayerState.BUFFERING) {
-                        console.warn(`Autoplay blocked for ${itemId}, attempting muted fallback`);
-                        event.target.mute();
-                        event.target.playVideo();
-                      }
-                    }, 1000);
-
-                    // Pause slideshow timer when video starts if configured
-                    if (CONFIG.waitForTrailerToEnd && STATE.slideshow.slideInterval) {
-                      STATE.slideshow.slideInterval.stop();
-                    }
-                  }
-                },
-                'onStateChange': (event) => {
-                  if (event.data === YT.PlayerState.ENDED) {
-                    if (CONFIG.waitForTrailerToEnd) {
-                      SlideshowManager.nextSlide();
-                    } else {
-                      event.target.playVideo(); // Loop if not waiting for end if trailer is shorter than slide duration
-                    }
-                  }
-                },
-                'onError': () => {
-                  // Fallback to next slide on error
-                  if (CONFIG.waitForTrailerToEnd) {
-                    SlideshowManager.nextSlide();
-                  }
-                }
-              }
-            });
-          });
-        });
-
-        // 2. Check for local video trailers in MediaSources if yt is not available
-      } else if (!isYoutube) {
-        isVideo = true;
-
-        const videoAttributes = {
-          className: "backdrop video-backdrop",
-          src: trailerUrl,
-          autoplay: false,
-          preload: "auto",
-          loop: false,
-          style: "object-fit: cover; width: 100%; height: 100%; pointer-events: none;"
-        };
-
-        if (STATE.slideshow.isMuted) {
-          videoAttributes.muted = "";
-        }
-
-        backdrop = SlideUtils.createElement("video", videoAttributes);
-
-        if (!STATE.slideshow.isMuted) {
-          backdrop.volume = 0.4;
-        }
-
-        STATE.slideshow.videoPlayers[itemId] = backdrop;
-
-        backdrop.addEventListener('play', () => {
-          if (CONFIG.waitForTrailerToEnd && STATE.slideshow.slideInterval) {
-            STATE.slideshow.slideInterval.stop();
-          }
-        });
-
-        backdrop.addEventListener('ended', () => {
-          if (CONFIG.waitForTrailerToEnd) {
-            SlideshowManager.nextSlide();
-          }
-        });
-
-        backdrop.addEventListener('error', () => {
-          if (CONFIG.waitForTrailerToEnd) {
-            SlideshowManager.nextSlide();
-          }
-        });
+      if (!STATE.slideshow.isMuted) {
+        backdrop.volume = 0.4;
       }
+
+      STATE.slideshow.videoPlayers[itemId] = backdrop;
+
+      backdrop.addEventListener('play', () => {
+        if (CONFIG.waitForTrailerToEnd && STATE.slideshow.slideInterval) {
+          STATE.slideshow.slideInterval.stop();
+        }
+      });
+
+      backdrop.addEventListener('ended', () => {
+        if (CONFIG.waitForTrailerToEnd) {
+          SlideshowManager.nextSlide();
+        } else {
+          // Loop the video if not waiting for end
+          backdrop.currentTime = 0;
+          backdrop.play();
+        }
+      });
+
+      backdrop.addEventListener('error', (e) => {
+        console.error(`Error loading local trailer for ${itemId}:`, e);
+        if (CONFIG.waitForTrailerToEnd) {
+          SlideshowManager.nextSlide();
+        }
+      });
     }
 
     if (!isVideo) {
@@ -1701,12 +1591,7 @@ const SlideCreator = {
     const detailButton = this.createDetailButton(itemId);
     const favoriteButton = this.createFavoriteButton(item);
 
-    if (trailerUrl && !isVideo && CONFIG.showTrailerButton) {
-      const trailerButton = this.createTrailerButton(trailerUrl);
-      buttonContainer.append(detailButton, playButton, trailerButton, favoriteButton);
-    } else {
-      buttonContainer.append(detailButton, playButton, favoriteButton);
-    }
+    buttonContainer.append(detailButton, playButton, favoriteButton);
 
     slide.append(
       logoContainer,
