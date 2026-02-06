@@ -1,45 +1,45 @@
 [
-	{
-		"guid": "d7e11d57-819b-4bdd-a88d-53c5f5560225",
-		"name": "Media Bar Enhanced v2",
-		"description": "A feature-rich fork of the original Media Bar script by MakD that brings your home screen to life.\n\n-> 100% Configurable via Web UI: Manage all features, lists, and settings effortlessly through the plugin configuration page.\n\nKey Highlights:\n- Cinematic Video Backdrops: Supports local & YouTube trailers (incl. SponsorBlock)\n- Custom Content: Curate your slideshow with specific Collections, Playlists, or seasonal events\n\nAdditional Features:\n- Full-width immersive mode\n- Smart resolution handling (up to 4K)\n- Full keyboard navigation & playback control\n- Wait-for-trailer options\n- Customizable pagination & animations\n\nIf you do not have write permissions to the web folder, please also install the file-transformation plugin.",
-		"overview": "Transforms your Jellyfin home screen with an immersive, fully configurable media slideshow featuring video backdrops.",
-		"owner": "DI0IK",
-		"category": "General",
-		"imageUrl": "https://raw.githubusercontent.com/di0ik/jellyfin-plugin-media-bar-enhanced/refs/heads/main/logo.png",
-		"versions": [
-			{
-				"version": "1.0.0.3",
-				"changelog": "- feat: Add client-side settings feature for selected media bar settings",
-				"targetAbi": "10.11.0.0",
-				"sourceUrl": "https://github.com/DI0IK/jellyfin-plugin-media-bar-enhanced/releases/download/v1.0.0.2/Jellyfin.Plugin.MediaBarEnhanced.zip",
-				"checksum": "3271601fbc931369d075f4ebd76eae34",
-				"timestamp": "2026-02-06T23:36:39Z"
-			},
-			{
-				"version": "1.0.0.2",
-				"changelog": "- feat: Add client-side settings feature for selected media bar settings",
-				"targetAbi": "10.11.0.0",
-				"sourceUrl": "https://github.com/DI0IK/jellyfin-plugin-media-bar-enhanced/releases/download/v1.0.0.2/Jellyfin.Plugin.MediaBarEnhanced.zip",
-				"checksum": "3271601fbc931369d075f4ebd76eae34",
-				"timestamp": "2026-02-06T23:36:39Z"
-			},
-			{
-				"version": "1.0.0.1",
-				"changelog": "- feat: Add client-side settings feature for selected media bar settings",
-				"targetAbi": "10.11.0.0",
-				"sourceUrl": "https://github.com/DI0IK/jellyfin-plugin-media-bar-enhanced/releases/download/v1.0.0.0/Jellyfin.Plugin.MediaBarEnhanced.zip",
-				"checksum": "8e8817cda3900de615441d5aabfa7860",
-				"timestamp": "2026-02-06T23:19:37Z"
-			},
-			{
-				"version": "1.0.0.0",
-				"changelog": "- feat: Add client-side settings feature for selected media bar settings",
-				"targetAbi": "10.11.0.0",
-				"sourceUrl": "https://github.com/DI0IK/jellyfin-plugin-media-bar-enhanced/releases/download/v1.0.0.0/Jellyfin.Plugin.MediaBarEnhanced.zip",
-				"checksum": "8e8817cda3900de615441d5aabfa7860",
-				"timestamp": "2026-02-06T23:19:37Z"
-			}
-		]
-	}
+  {
+    "guid": "d7e11d57-819b-4bdd-a88d-53c5f5560225",
+    "name": "Media Bar Enhanced v2",
+    "description": "A feature-rich fork of the original Media Bar script by MakD that brings your home screen to life.\n\n-> 100% Configurable via Web UI: Manage all features, lists, and settings effortlessly through the plugin configuration page.\n\nKey Highlights:\n- Cinematic Video Backdrops: Supports local & YouTube trailers (incl. SponsorBlock)\n- Custom Content: Curate your slideshow with specific Collections, Playlists, or seasonal events\n\nAdditional Features:\n- Full-width immersive mode\n- Smart resolution handling (up to 4K)\n- Full keyboard navigation & playback control\n- Wait-for-trailer options\n- Customizable pagination & animations\n\nIf you do not have write permissions to the web folder, please also install the file-transformation plugin.",
+    "overview": "Transforms your Jellyfin home screen with an immersive, fully configurable media slideshow featuring video backdrops.",
+    "owner": "DI0IK",
+    "category": "General",
+    "imageUrl": "https://raw.githubusercontent.com/di0ik/jellyfin-plugin-media-bar-enhanced/refs/heads/main/logo.png",
+    "versions": [
+      {
+        "version": "1.0.0.3",
+        "changelog": "- feat: Add client-side settings feature for selected media bar settings",
+        "targetAbi": "10.11.0.0",
+        "sourceUrl": "https://github.com/DI0IK/jellyfin-plugin-media-bar-enhanced/releases/download/v1.0.0.3/Jellyfin.Plugin.MediaBarEnhanced.zip",
+        "checksum": "f9bd564c422a6429ee72662b518b0166",
+        "timestamp": "2026-02-06T23:44:44Z"
+      },
+      {
+        "version": "1.0.0.2",
+        "changelog": "- feat: Add client-side settings feature for selected media bar settings",
+        "targetAbi": "10.11.0.0",
+        "sourceUrl": "https://github.com/DI0IK/jellyfin-plugin-media-bar-enhanced/releases/download/v1.0.0.2/Jellyfin.Plugin.MediaBarEnhanced.zip",
+        "checksum": "3271601fbc931369d075f4ebd76eae34",
+        "timestamp": "2026-02-06T23:36:39Z"
+      },
+      {
+        "version": "1.0.0.1",
+        "changelog": "- feat: Add client-side settings feature for selected media bar settings",
+        "targetAbi": "10.11.0.0",
+        "sourceUrl": "https://github.com/DI0IK/jellyfin-plugin-media-bar-enhanced/releases/download/v1.0.0.0/Jellyfin.Plugin.MediaBarEnhanced.zip",
+        "checksum": "8e8817cda3900de615441d5aabfa7860",
+        "timestamp": "2026-02-06T23:19:37Z"
+      },
+      {
+        "version": "1.0.0.0",
+        "changelog": "- feat: Add client-side settings feature for selected media bar settings",
+        "targetAbi": "10.11.0.0",
+        "sourceUrl": "https://github.com/DI0IK/jellyfin-plugin-media-bar-enhanced/releases/download/v1.0.0.0/Jellyfin.Plugin.MediaBarEnhanced.zip",
+        "checksum": "8e8817cda3900de615441d5aabfa7860",
+        "timestamp": "2026-02-06T23:19:37Z"
+      }
+    ]
+  }
 ]
