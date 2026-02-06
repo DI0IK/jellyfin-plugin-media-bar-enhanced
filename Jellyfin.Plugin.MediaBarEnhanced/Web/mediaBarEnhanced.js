@@ -1472,9 +1472,7 @@ const SlideCreator = {
       const videoAttributes = {
         className: "backdrop video-backdrop",
         src: trailerUrl,
-        autoplay: false,
         preload: "auto",
-        loop: false,
         style: "object-fit: cover; width: 100%; height: 100%; pointer-events: none;"
       };
 
